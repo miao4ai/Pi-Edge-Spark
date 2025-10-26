@@ -44,3 +44,32 @@ Instead of sending all raw data to the cloud, each edge node performs lightweigh
 - ⚡ **Low-Cost Deployment** — Runs entirely on 4 Raspberry Pi boards.  
 
 ---
+
+## 📂 Project Structure
+
+```text
+pi-edge-spark/
+├── edge_jobs/                     # Edge node ETL and preprocessing scripts
+│   ├── edge_clean_job.py          # Cleans local raw data on Raspberry Pi
+│   └── edge_feature_job.py        # Extracts local statistical features
+│
+├── spark_jobs/                    # Spark driver orchestration and aggregation
+│   ├── distribute_task.py         # Sends ETL tasks to edge nodes via HTTP
+│   ├── aggregate_results.py       # Aggregates cleaned data from all edges
+│   └── utils/
+│       └── edge_comm.py           # Communication helper (REST / MQTT)
+│
+├── edge_agent/                    # Lightweight Flask agent running on edge
+│   └── edge_server.py             # Listens for Spark task requests and runs jobs
+│
+├── conf/                          # Spark configuration files
+│   ├── spark-env.sh               # Environment variables for Spark runtime
+│   └── workers                    # List of edge worker IP addresses
+│
+├── scripts/                       # Cluster control and pipeline execution
+│   ├── start_cluster.sh           # Starts Spark master and worker processes
+│   ├── start_edge_agents.sh       # Starts Flask agents on all Raspberry Pis
+│   ├── submit_etl_pipeline.sh     # Unified entry point to trigger Spark jobs
+│
+└── README.md                      # Project documentation and setup guide
+```
