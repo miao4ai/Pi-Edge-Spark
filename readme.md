@@ -34,3 +34,13 @@ Instead of sending all raw data to the cloud, each edge node performs lightweigh
         Cleaned CSV          Cleaned CSV         Cleaned CSV
              └───────────────→───────────────→───────────────┘
                        Aggregated by Spark Master
+```
+
+## ⚙️ Features
+- 🧩 **Edge-aware Spark Jobs** — Spark Driver sends ETL tasks to Raspberry Pi nodes.  
+- 🧮 **Distributed Data Cleaning** — Each edge node runs its own Python ETL agent.  
+- 📤 **Unified Aggregation** — Cleaned data is sent back to the Spark cluster or shared storage.  
+- 🌐 **Lightweight Communication** — Implemented via REST API (Flask) or MQTT.  
+- ⚡ **Low-Cost Deployment** — Runs entirely on 4 Raspberry Pi boards.  
+
+---
