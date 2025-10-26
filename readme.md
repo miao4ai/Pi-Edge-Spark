@@ -73,3 +73,10 @@ pi-edge-spark/
 │
 └── README.md                      # Project documentation and setup guide
 ```
+
+## 🚀 Workflow
+1. **Spark Master** starts the cluster and detects all edge nodes.  
+2. **Spark Driver** distributes ETL tasks (HTTP calls) to each node.  
+3. **Edge Agent** cleans local data (CSV/JSON, sensor logs, etc.).  
+4. Cleaned datasets are pushed to a shared volume (NFS/HDFS).  
+5. **Spark Master** aggregates results and performs higher-level analysis.
