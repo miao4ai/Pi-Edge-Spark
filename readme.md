@@ -1,82 +1,51 @@
 # 🧠 Pi-Edge-Spark  
-**Edge-Orchestrated Data Processing with Apache Spark on Raspberry Pi**
+**Pi-Edge-Spark** is a distributed real-time ETL and streaming analytics platform  
+built for edge clusters such as Raspberry Pi networks.  
+
+It combines **PySpark Structured Streaming**, **Redis Streams**, and **MinIO**  
+to provide an online data-processing framework where each edge node continuously  
+produces sensor or event data, and a central Spark cluster performs live analytics,  
+aggregation, and anomaly detection.
 
 ---
 
-## 📘 Overview
-**Pi-Edge-Spark** demonstrates how to use **Apache Spark** as a central orchestrator to coordinate multiple **edge-computing devices** (such as Raspberry Pi) for distributed **data cleaning, preprocessing, and aggregation**.
+## ✨ Features
 
-Instead of sending all raw data to the cloud, each edge node performs lightweight ETL locally — reducing bandwidth and latency — while Spark manages job distribution and global analytics.
-
-> 💡 Goal: Build a mini **Edge-Cloud Collaborative Data Pipeline** powered by Spark + Python.
-
-## 🏗️ System Architecture
-
-```text
-                  ┌───────────────────────────────┐
-                  │       Spark Master (Cloud)    │
-                  │ ───────────────────────────── │
-                  │ • Job Orchestrator            │
-                  │ • Global Aggregation          │
-                  └──────────────┬────────────────┘
-                                 │ Spark Jobs (HTTP/MQTT)
-             ┌───────────────────┼───────────────────┐
-             │                   │                   │
-      ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-      │  Edge Node 1 │    │  Edge Node 2 │    │  Edge Node 3 │
-      │ (Raspberry)  │    │ (Raspberry)  │    │ (Raspberry)  │
-      │ ─────────────│    │ ─────────────│    │ ─────────────│
-      │ • SparkWorker│    │ • SparkWorker│    │ • SparkWorker│
-      │ • Edge Agent │    │ • Edge Agent │    │ • Edge Agent │
-      │ • Local ETL  │    │ • Local ETL  │    │ • Local ETL  │
-      └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
-             │                   │                   │
-        Cleaned CSV          Cleaned CSV         Cleaned CSV
-             └───────────────→───────────────→───────────────┘
-                       Aggregated by Spark Master
-```
-
-## ⚙️ Features
-- 🧩 **Edge-aware Spark Jobs** — Spark Driver sends ETL tasks to Raspberry Pi nodes.  
-- 🧮 **Distributed Data Cleaning** — Each edge node runs its own Python ETL agent.  
-- 📤 **Unified Aggregation** — Cleaned data is sent back to the Spark cluster or shared storage.  
-- 🌐 **Lightweight Communication** — Implemented via REST API (Flask) or MQTT.  
-- ⚡ **Low-Cost Deployment** — Runs entirely on 4 Raspberry Pi boards.  
+- **Dynamic edge discovery** — supports variable number of worker nodes.
+- **Secure architecture** — no IPs hard-coded; cluster info injected at runtime.
+- **Streaming ETL** — continuous ingestion + online aggregation.
+- **Edge-to-Cloud bridge** — lightweight message broker (Redis Streams / Redpanda).
+- **Hybrid storage** — MinIO (S3-compatible) for history, TimescaleDB for metrics.
+- **Airflow orchestration** — DAGs trigger ETL & upload jobs automatically.
+- **Visual analytics** — optional Grafana or Streamlit dashboards.
 
 ---
 
-## 📂 Project Structure
-
+## 🧱 Architecture Overview
 ```text
-pi-edge-spark/
-├── edge_jobs/                     # Edge node ETL and preprocessing scripts
-│   ├── edge_clean_job.py          # Cleans local raw data on Raspberry Pi
-│   └── edge_feature_job.py        # Extracts local statistical features
-│
-├── spark_jobs/                    # Spark driver orchestration and aggregation
-│   ├── distribute_task.py         # Sends ETL tasks to edge nodes via HTTP
-│   ├── aggregate_results.py       # Aggregates cleaned data from all edges
-│   └── utils/
-│       └── edge_comm.py           # Communication helper (REST / MQTT)
-│
-├── edge_agent/                    # Lightweight Flask agent running on edge
-│   └── edge_server.py             # Listens for Spark task requests and runs jobs
-│
-├── conf/                          # Spark configuration files
-│   ├── spark-env.sh               # Environment variables for Spark runtime
-│   └── workers                    # List of edge worker IP addresses
-│
-├── scripts/                       # Cluster control and pipeline execution
-│   ├── start_cluster.sh           # Starts Spark master and worker processes
-│   ├── start_edge_agents.sh       # Starts Flask agents on all Raspberry Pis
-│   ├── submit_etl_pipeline.sh     # Unified entry point to trigger Spark jobs
-│
-└── README.md                      # Project documentation and setup guide
+    ┌──────────────────────────────────────────────┐
+    │               Airflow DAGs                   │
+    │  • Schedule ETL and upload jobs              │
+    │  • Monitor cluster health                    │
+    └──────────────────────────────────────────────┘
+                       │
+                       ▼
+    ┌──────────────────────────────────────────────┐
+    │        Spark Structured Streaming Cluster     │
+    │  • Subscribe to Redis / Kafka topics          │
+    │  • Aggregate, clean, and detect anomalies     │
+    │  • Output → MinIO / TimescaleDB               │
+    └──────────────────────────────────────────────┘
+                       ▲
+                       │
+    ┌──────────────┬──────────────┬──────────────┐
+    │ Edge Node 1  │ Edge Node 2  │ Edge Node N  │
+    │──────────────│──────────────│──────────────│
+    │ • Sensor data│ • File tail  │ • MQTT input  │
+    │ • Python pub │ • Redis pub  │ • local ETL   │
+    └──────────────┴──────────────┴──────────────┘
+                       │
+                       ▼
+             Message Broker Layer
+      (Redis Streams / Kafka / Redpanda)
 ```
-
-## 🚀 Workflow
-1. **Spark Master** starts the cluster and detects all edge nodes.  
-2. **Spark Driver** distributes ETL tasks (HTTP calls) to each node.  
-3. **Edge Agent** cleans local data (CSV/JSON, sensor logs, etc.).  
-4. Cleaned datasets are pushed to a shared volume (NFS/HDFS).  
-5. **Spark Master** aggregates results and performs higher-level analysis.
